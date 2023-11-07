@@ -1,3 +1,4 @@
+from concurrent.futures import ThreadPoolExecutor
 import requests
 import time
 import datetime
@@ -5,14 +6,12 @@ from colorama import Fore, Style, init
 from requests.adapters import HTTPAdapter
 from requests.packages.urllib3.util.retry import Retry
 from requests.exceptions import RetryError
-from concurrent.futures import ThreadPoolExecutor, as_completed
-
 
 # Initialize Colorama
 init(autoreset=True)
 
 # Replace with your actual API key for iProxy
-IPROXY_API_KEY = "XXXXXXXXXXXXXXX"
+IPROXY_API_KEY = "XXXXXXX"
 
 # iProxy API base URL
 IPROXY_BASE_URL = "https://api.iproxy.online/v1"
@@ -57,27 +56,31 @@ def get_connection_status(connection_id):
 
 def monitor_proxies():
     ## Replace with your actual connection IDs
-    connection_ids = ["XXXXXX", "XXXXX", "XXXXX", "XXXXX", "XXXXX"]
+    connection_ids = ["XXXXXXX", "XXXXXXX", "XXXXXXX", "XXXXXXX", "XXXXXXX"]
 
     with ThreadPoolExecutor() as executor:
         while True:
-            futures = {executor.submit(get_connection_status, cid): cid for cid in connection_ids}
+            # Submit all tasks to the executor and create a dictionary to keep track of them
+            futures = {cid: executor.submit(get_connection_status, cid) for cid in connection_ids}
 
-            for future in as_completed(futures):
-                connection_id = futures[future]
+            # Iterate through connection IDs in the original order
+            for cid in connection_ids:
                 try:
-                    status_info = future.result()
+                    # Wait for the future associated with this connection ID
+                    status_info = futures[cid].result()
                     if status_info:
                         online_status = status_info['result']['online']
                         status_color = Fore.GREEN if online_status else Fore.RED
                         external_ip = status_info['result']['externalIp']
                         timestamp = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-                        print(f"{timestamp} - Connection {connection_id} is {status_color}{('Online' if online_status else 'Offline')}{Style.RESET_ALL} with external IP: {external_ip}")
+                        print(f"{timestamp} - Connection {cid} is {status_color}{('Online' if online_status else 'Offline')}{Style.RESET_ALL} with external IP: {external_ip}")
                 except Exception as e:
-                    print(f"Connection {connection_id} resulted in an error: {e}")
+                    print(f"Connection {cid} resulted in an error: {e}")
 
             print("\n")
-            time.sleep(10)  # Wait for 10 seconds before the next round of checks
+            time.sleep(10)  # Sleep for 10 seconds before checking again
 
 if __name__ == "__main__":
     monitor_proxies()
+
+
