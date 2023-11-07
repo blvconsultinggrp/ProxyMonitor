@@ -7,8 +7,9 @@ from colorama import Fore, Style, init
 #Replace with your actual token
 YOUR_ACCESS_TOKEN = "XXXXXXXXXXXXXXXXXXX"
 
-#Base URL
-BASE_URL = "XXXXXXXXXXXXXXXXXXX"
+
+#Base URL formatted as http://<ip>:<port>/api/
+BASE_URL = "XXXXXXXXXXXXXXXXXX"
 
 #Headers
 HEADERS = {
